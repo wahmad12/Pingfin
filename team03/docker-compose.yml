@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  team03-db:
+    image: mysql:8
+    container_name: team03-db
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: bankdb
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pingfin-net
+
+  team03-api:
+    build: ./api
+    container_name: team03-api
+    ports:
+      - "8021:8021"
+    environment:
+      DB_HOST: team03-db
+      DB_PASSWORD: secret
+    depends_on:
+      - team03-db
+    networks:
+      - pingfin-net
+
+  team03-gui:
+    build: ./gui
+    container_name: team03-gui
+    ports:
+      - "8121:8121"
+    networks:
+      - pingfin-net
+
+networks:
+  pingfin-net:
+    external: true
