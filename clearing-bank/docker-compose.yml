@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  clearing-db:
+    image: mysql:8
+    container_name: clearing-db
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: bankdb
+    networks:
+      - pingfin-net
+
+  clearing-api:
+    build: ./api
+    container_name: clearing-api
+    ports:
+      - "8500:8500"
+    networks:
+      - pingfin-net
+
+  clearing-gui:
+    build: ./gui
+    container_name: clearing-gui
+    ports:
+      - "8600:8600"
+    networks:
+      - pingfin-net
+
+networks:
+  pingfin-net:
+    external: true
