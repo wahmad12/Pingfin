@@ -1,0 +1,57 @@
+
+al commando's 
+
+docker network create pingfin-net
+
+docker compose -f docker-compose-nf.yml up -d --build
+
+docker build -t team01-api ./api
+
+docker-compose up -d
+
+docker logs team01-api
+
+docker ps
+
+
+cd team01
+docker-compose up -d --build
+
+cd ../team02
+docker-compose up -d --build
+
+cd ../team03
+docker-compose up -d --build
+
+cd ../clearing
+docker-compose up -d --build
+
+Optie 3 (EASIEST): gebruik Postman
+Open Postman
+Kies POST
+URL:
+http://localhost:8001/send-payment
+Body → JSON:
+{
+  "amount": 100
+}
+
+👉 Klik Send
+
+nog te doen
+
+🔍 12. Testen (verplicht volgens requirements)
+Health check
+curl http://SERVER-IP:8001/health
+Interbank test
+team01 → clearing bank → team02
+
+👉 dit is letterlijk vereist
+
+🔐 13. Security best practices (voor jullie team)
+DB nooit exposen ❗
+API met token beveiligen
+enkel toegewezen poorten gebruiken
+firewall (optioneel):
+ufw allow 8001
+

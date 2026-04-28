@@ -1,0 +1,14 @@
+{
+  "name": "clearing-api",
+  "version": "1.0.0",
+  "description": "Central Clearing Bank API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "mysql2": "^3.9.0"
+  }
+}
