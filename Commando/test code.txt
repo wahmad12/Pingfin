@@ -1,0 +1,9 @@
+curl -X POST httplocalhost8001send-payment 
+-H Content-Type applicationjson 
+-d '{
+  po_id TEAM01_TEST_001,
+  amount 100.50,
+  from TEAM01,
+  to TEAM02,
+  message Day 2 deployment test
+}'
