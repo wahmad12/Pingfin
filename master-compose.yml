@@ -1,0 +1,127 @@
+version: "3.9"
+
+services:
+  team01-db:
+    image: mysql:8
+    container_name: team01-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${TEAM01_DB_NAME}
+      MYSQL_USER: ${TEAM01_DB_USER}
+      MYSQL_PASSWORD: ${TEAM01_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${TEAM01_DB_ROOT_PASSWORD}
+    volumes:
+      - "./bank-team-01/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro"
+      - team01-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${TEAM01_DB_ROOT_PASSWORD}"]
+      interval: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - pingfin-net
+
+  team01-api:
+    build:
+      context: "./bank-team-01"
+      dockerfile: api/Dockerfile
+    container_name: team01-api
+    restart: on-failure
+    depends_on:
+      team01-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: team01-db
+      DB_PORT: 3306
+      DB_USER: ${TEAM01_DB_USER}
+      DB_PASSWORD: ${TEAM01_DB_PASSWORD}
+      DB_NAME: ${TEAM01_DB_NAME}
+      PORT: 8001
+      OB_BIC: ${TEAM01_OB_BIC}
+      BB_BIC: ${TEAM01_BB_BIC}
+      CB_URL: ${CB_URL}
+      SECRET_KEY_OB: ${TEAM01_SECRET_KEY_OB}
+      SECRET_KEY_BB: ${TEAM01_SECRET_KEY_BB}
+    ports:
+      - "8001:8001"
+    networks:
+      - pingfin-net
+
+  team01-gui:
+    image: nginx:alpine
+    container_name: team01-gui
+    restart: always
+    depends_on:
+      - team01-api
+    volumes:
+      - "./bank-team-01/gui:/usr/share/nginx/html:ro"
+    ports:
+      - "8101:80"
+    networks:
+      - pingfin-net
+
+  team02-db:
+    image: mysql:8
+    container_name: team02-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${TEAM02_DB_NAME}
+      MYSQL_USER: ${TEAM02_DB_USER}
+      MYSQL_PASSWORD: ${TEAM02_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${TEAM02_DB_ROOT_PASSWORD}
+    volumes:
+      - "./bank-team-02/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro"
+      - team02-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${TEAM02_DB_ROOT_PASSWORD}"]
+      interval: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - pingfin-net
+
+  team02-api:
+    build:
+      context: "./bank-team-02"
+      dockerfile: api/Dockerfile
+    container_name: team02-api
+    restart: on-failure
+    depends_on:
+      team02-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: team02-db
+      DB_PORT: 3306
+      DB_USER: ${TEAM02_DB_USER}
+      DB_PASSWORD: ${TEAM02_DB_PASSWORD}
+      DB_NAME: ${TEAM02_DB_NAME}
+      PORT: 3000
+      BANK_BIC: ${TEAM02_BIC}
+      BANK_SECRET: ${TEAM02_SECRET}
+      CB_URL: ${CB_URL}
+    ports:
+      - "8011:3000"
+    networks:
+      - pingfin-net
+
+  team02-gui:
+    image: nginx:alpine
+    container_name: team02-gui
+    restart: always
+    depends_on:
+      - team02-api
+    volumes:
+      - "./bank-team-02/gui/public:/usr/share/nginx/html:ro"
+    ports:
+      - "8111:80"
+    networks:
+      - pingfin-net
+
+networks:
+  pingfin-net:
+    name: pingfin-net
+    driver: bridge
+
+volumes:
+  team01-db-data:
+  team02-db-data:

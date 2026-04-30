@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+
+  # ========================
+  # TEAM01 DATABASE (MYSQL)
+  # ========================
+  team01-db:
+    image: mysql:8
+    container_name: team01-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${TEAM01_DB_NAME}
+      MYSQL_USER: ${TEAM01_DB_USER}
+      MYSQL_PASSWORD: ${TEAM01_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${TEAM01_DB_ROOT_PASSWORD}
+    volumes:
+      - ./team01/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - team01-db-data:/var/lib/mysql
+    networks:
+      - internal_net
+
+  # ========================
+  # TEAM01 API
+  # ========================
+  team01-api:
+    build: ../team01/api
+    container_name: team01-api
+    depends_on:
+      - team01-db
+    environment:
+      DB_HOST: team01-db
+      DB_USER: ${TEAM01_DB_USER}
+      DB_PASSWORD: ${TEAM01_DB_PASSWORD}
+      DB_NAME: ${TEAM01_DB_NAME}
+    ports:
+      - "8001:8001"
+    networks:
+      - internal_net
+
+  # ========================
+  # TEAM01 GUI
+  # ========================
+  team01-gui:
+    build: ../team01/gui
+    container_name: team01-gui
+    depends_on:
+      - team01-api
+    ports:
+      - "8101:3000"
+    networks:
+      - internal_net
+
+# ========================
+# NETWORK
+# ========================
+networks:
+  internal_net:
+    driver: bridge
+
+# ========================
+# VOLUMES
+# ========================
+volumes:
+  team01-db-data:
